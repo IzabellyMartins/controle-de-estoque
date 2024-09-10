@@ -1,0 +1,142 @@
+<div class="sidebar">
+    <ul class="sidebar-menu">
+        <li><a href="/clientes/dashboard"><i class='bx bxs-dashboard'></i>Menu</a></li>
+        <br>
+        <li><a href="/clientes/cadastrarproduto"><i class='bx bx-package'></i>Cadastrar Produtos</a></li>
+        <li><a href="/clientes/venda"><i class='bx bxs-store'></i>Realizar Vendas</a></li>
+        <li><a href="/clientes/detalhesvenda"><i class='bx bx-book-bookmark'></i>Detalhes de Vendas</a></li>
+        <li><a href="/clientes/entradaesaida"><i class='bx bx-line-chart'></i>Entrada e Saída</a></li>
+    </ul>
+
+    <ul class="sidebar-menu">
+        <li>
+            <a href="/clientes/sair" class="sair">
+                <i class='bx bx-log-out'></i>
+                Sair
+            </a>
+        </li>
+    </ul>
+</div>
+
+<div class="detalhes-venda">
+    <h2>Detalhes de Vendas</h2>
+    <form action="/clientes/detalhesvenda" method="GET" class="form-container">
+        <div class="form-group-container">
+        <div class="form-group">
+            <label for="dataInicio">Data de Início:</label>
+            <input type="date" id="dataInicio" name="dataInicio" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label for="dataFim">Data de Fim:</label>
+            <input type="date" id="dataFim" name="dataFim" class="form-control" required>
+        </div>
+        </div>
+        <div class="form-group">
+            <input type="submit" value="Pesquisar" class="botao">
+        </div>
+    </form>
+
+    {{#if vendas.length}}
+        <br>
+        <h3>Vendas Encontradas:</h3>
+        <br>
+        <table class="tabela-vendas">
+            <thead>
+                <tr>
+                    <th>Produto</th>
+                    <th>Quantidade</th>
+                    <th>Preço Total</th>
+                    <th>Data da Venda</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each vendas}}
+                    <tr>
+                        <td>{{this.produto.nomeproduto}}</td>
+                        <td>{{this.quantidade}}</td>
+                        <td>{{formatarNumero this.precovenda}}</td>
+                        <td>{{formatarData this.datavenda}}</td>
+                    </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    {{else}}
+        <br>
+        <p>Nenhuma venda encontrada no intervalo de datas especificado.</p>
+    {{/if}}
+</div>
+
+
+
+<style>
+    .detalhes-venda {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        max-width: 800px;
+        width: 100%;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .detalhes-venda h2 {
+        margin-bottom: 20px;
+        color: #333;
+        text-align: center;
+    }
+    
+    .botao {
+        background-color: #007bff;
+        color: white;
+        padding: 6px 12px;
+        text-align: center;
+        text-decoration: none;
+        border-radius: 1000px;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background-color 0.3s ease;
+    }
+    
+    .botao:hover {
+        background-color: #0056b3;
+    }
+
+    .form-group-container {
+        display: flex;
+        justify-content: space-between;
+        gap: 20px; 
+    }
+
+    .form-group {
+        flex: 1; 
+        min-width: 150px; 
+    }
+
+
+    .form-group label {
+        margin-bottom: 5px;
+        color: black;
+    }
+
+    .form-group input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        box-sizing: border-box;
+    }
+
+    thead th {
+    padding: 0 15px; 
+    margin-right: 15px; 
+    }
+
+    thead th:last-child {
+        margin-right: 0; 
+    }
+
+</style>

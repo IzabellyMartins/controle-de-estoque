@@ -1,0 +1,258 @@
+<div class="sidebar">
+    <ul class="sidebar-menu">
+        <li><a href="/clientes/dashboard"><i class='bx bxs-dashboard'></i>Menu</a></li>
+        <br>
+        <li><a href="/clientes/cadastrarproduto"><i class='bx bx-package'></i>Cadastrar Produtos</a></li>
+        <li><a href="/clientes/venda"><i class='bx bxs-store'></i>Realizar Vendas</a></li>
+        <li><a href="/clientes/detalhesvenda"><i class='bx bx-book-bookmark'></i>Detalhes de Vendas</a></li>
+        <li><a href="/clientes/entradaesaida"><i class='bx bx-line-chart'></i>Entrada e Saída</a></li>
+    </ul>
+
+    <ul class="sidebar-menu">
+        <li>
+            <a href="/clientes/sair" class="sair">
+                <i class='bx bx-log-out'></i>
+                Sair
+            </a>
+        </li>
+    </ul>
+</div>
+
+<!-- Seção do Carrinho -->
+<div class="carrinho">
+    <h2>Carrinho</h2>
+    <br>
+    <form action="/clientes/venda/pesquisar" method="GET" class="form-container2">
+        <div class="form-group">
+            <label for="nomeproduto">Pesquisar Produto:</label>
+            <input type="text" id="pesquisaproduto" name="pesquisaproduto" class="form-control" required>
+            <button type="submit" class="botao">Pesquisar</button>
+        </div>
+    </form>
+
+    {{#if produtos}}
+    <table>
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Preço Venda</th>
+                <th>Quantidade em Estoque</th>
+                <th>Quantidade</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#each produtos}}
+            <tr>
+                <td>{{this.nomeproduto}}</td>
+                <td>R$ {{formatarNumero this.precovenda}}</td>
+                <td>{{this.quantidade}} unidades</td>
+                <td>
+                    <input type="number" class="quantidade-input" data-id="{{this.id}}" data-nome="{{this.nomeproduto}}" data-preco="{{this.precovenda}}" min="1" max="{{this.quantidade}}">
+                </td>
+            </tr>
+            {{/each}}
+        </tbody>
+    </table>
+    <br>
+    <button type="button" id="adicionar-carrinho" class="botao">Adicionar ao Carrinho</button>
+    {{/if}}
+
+    <!-- Lista de produtos adicionados ao carrinho -->
+    <br>
+    <h3>Produtos no Carrinho</h3>
+    <br>
+    <ul id="carrinho-lista"></ul>
+</div>
+
+<!-- Formulário de Realização de Venda -->
+<div class="carrinho">
+    <form id="vender-form" action="/clientes/vender" method="POST">
+        <input type="hidden" name="produtosNoCarrinho" id="produtosNoCarrinho">
+        <button type="submit" class="botaoverde">Realizar venda</button>
+    </form>
+</div>
+
+<!-- Formulário de Cancelamento -->
+<div class="carrinho">
+    <form id="cancelar-form" action="/clientes/cancelar" method="POST">
+        <button type="submit" class="botaovermelho">Cancelar venda</button>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const carrinhoLista = document.getElementById('carrinho-lista');
+        const produtosNoCarrinhoInput = document.getElementById('produtosNoCarrinho');
+
+        // Função para carregar produtos do carrinho do localStorage
+        function carregarCarrinho() {
+            const carrinho = JSON.parse(localStorage.getItem('carrinho')) || [];
+            carrinhoLista.innerHTML = ''; // Limpa a lista antes de recarregar
+            carrinho.forEach(item => {
+                const itemCarrinho = document.createElement('li');
+                itemCarrinho.textContent = `${item.nome} - R$ ${item.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }).replace('R$', '').trim()} (${item.quantidade} unidades)`;
+
+                // Cria botão de remover
+                const removerBotao = document.createElement('button');
+                removerBotao.textContent = 'Remover';
+                removerBotao.classList.add('botao-pequeno');
+                removerBotao.addEventListener('click', () => removerItemCarrinho(item.id));
+                itemCarrinho.appendChild(removerBotao);
+
+                carrinhoLista.appendChild(itemCarrinho);
+            });
+
+            // Atualiza o campo oculto do formulário com os produtos do carrinho
+            produtosNoCarrinhoInput.value = JSON.stringify(carrinho);
+        }
+
+        function removerItemCarrinho(id) {
+            let carrinho = JSON.parse(localStorage.getItem('carrinho')) || [];
+            carrinho = carrinho.filter(item => item.id !== id);
+            localStorage.setItem('carrinho', JSON.stringify(carrinho));
+            carregarCarrinho(); // Recarrega a lista do carrinho
+        }
+
+        document.getElementById('adicionar-carrinho').addEventListener('click', function() {
+            const quantidadeInputs = document.querySelectorAll('.quantidade-input');
+            let carrinho = JSON.parse(localStorage.getItem('carrinho')) || [];
+
+            quantidadeInputs.forEach(input => {
+                const quantidade = parseInt(input.value, 10);
+                if (quantidade > 0) {
+                    const nomeProduto = input.dataset.nome;
+                    const precoProduto = parseFloat(input.dataset.preco.replace(',', '.')); // Conversão para float
+                    const total = precoProduto * quantidade;
+                    const idProduto = input.dataset.id;
+
+                    // Verifica se o produto já está no carrinho
+                    const produtoExistente = carrinho.find(item => item.id === idProduto);
+                    if (produtoExistente) {
+                        // Atualiza a quantidade e o total
+                        produtoExistente.quantidade += quantidade;
+                        produtoExistente.total = produtoExistente.quantidade * precoProduto;
+                    } else {
+                        // Adiciona novo produto ao carrinho
+                        carrinho.push({ id: idProduto, nome: nomeProduto, quantidade: quantidade, total: total });
+                    }
+                }
+            });
+
+            // Salva o carrinho no localStorage
+            localStorage.setItem('carrinho', JSON.stringify(carrinho));
+
+            // Atualiza a lista visual do carrinho
+            carregarCarrinho();
+        });
+
+        // Limpar o localStorage ao finalizar a venda
+        document.getElementById('vender-form').addEventListener('submit', function() {
+            localStorage.removeItem('carrinho'); // Limpa o carrinho do localStorage
+        });
+
+        document.getElementById('cancelar-form').addEventListener('submit', function(event) {
+            event.preventDefault(); // Evita o comportamento padrão de submit
+            localStorage.removeItem('carrinho'); // Limpa o carrinho do localStorage
+            carregarCarrinho(); // Atualiza a lista do carrinho
+        });
+
+        // Carregar o carrinho quando a página for carregada
+        carregarCarrinho();
+    });
+
+</script>
+
+
+
+
+<style>
+    .venda, .carrinho {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        max-width: 800px;
+        width: 100%;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .botao {
+        background-color: #007bff;
+        color: white;
+        padding: 6px 12px;
+        text-align: center;
+        text-decoration: none;
+        border-radius: 1000px;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background-color 0.3s ease;
+    }
+    .botao:hover {
+        background-color: #0056b3;
+    }
+
+    .botaovermelho {
+        background-color:#d9534f;
+        color:white;
+        padding: 6px 12px;
+        text-align: center;
+        text-decoration: none;
+        border-radius: 1000px;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background-color 0.3s ease;
+    }
+    .botaovermelho:hover,  {
+        background-color: #c82333;
+    }
+    .botaoverde {
+        background-color: #5cb85c;
+        color: white;
+        padding: 6px 12px;
+        text-align: center;
+        text-decoration: none;
+        border-radius: 1000px;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background-color 0.3s ease;
+    }
+    .botaoverde:hover {
+        background-color: #4cae4c;
+    }
+    table th {
+    padding: 10px 15px; 
+    text-align: left; 
+    }
+
+    table th + th {
+        padding-left: 20px; 
+    }
+    .botao-container {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        margin-top: 20px;
+    }
+    .botao-pequeno {
+        background-color: #d9534f; 
+        color: #fff; 
+        border: none; 
+        border-radius: 4px; 
+        padding: 2px 4px; 
+        font-size: 13px; 
+        cursor: pointer;
+        transition: background-color 0.3s; 
+    }
+
+    .botao-pequeno:hover {
+        background-color: #c82333; 
+    }
+
+
+
+</style>

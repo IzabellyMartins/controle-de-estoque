@@ -1,0 +1,277 @@
+<div class="sidebar">
+    <ul class="sidebar-menu">
+        <li><a href="/clientes/dashboard"><i class='bx bxs-dashboard'></i>Menu</a></li>
+        <br>
+        <li><a href="/clientes/cadastrarproduto"><i class='bx bx-package'></i>Cadastrar Produtos</a></li>
+        <li><a href="/clientes/venda"><i class='bx bxs-store'></i>Realizar Vendas</a></li>
+        <li><a href="/clientes/detalhesvenda"><i class='bx bx-book-bookmark'></i>Detalhes de Vendas</a></li>
+        <li><a href="/clientes/entradaesaida"><i class='bx bx-line-chart'></i>Entrada e Saída</a></li>
+    </ul>
+
+    <ul class="sidebar-menu">
+        <li>
+            <a href="/clientes/sair" class="sair">
+                <i class='bx bx-log-out'></i>
+                Sair
+            </a>
+        </li>
+    </ul>
+</div>
+
+<div class="saidas">
+    <h2>Saídas</h2>
+    <h3>Cadastrar Saída</h3>
+    <br>
+    <!-- Formulário para cadastrar saída -->
+    <form action="/clientes/entradaesaida" method="POST" class="form-container" onsubmit="return validarFormulario()">
+        <div class="form-group-container">
+            <div class="form-group">
+                <label for="nomesaida">Nome da Saída:</label>
+                <input type="text" id="nomesaida" name="nomesaida" required>
+            </div>
+            <div class="form-group">
+                <label for="valor">Valor:</label>
+                <input type="text" id="valor" name="valor" required>
+                <small class="form-text text-muted">Use pontos como separadores, exemplo: 1.000,00</small>
+            </div>
+            <div class="form-group">
+                <label for="data">Data:</label>
+                <input type="date" id="data" name="data" required>
+            </div>
+        </div>
+        <div class="form-group">
+            <input type="submit" value="Cadastrar Saída" class="botao">
+        </div>
+    </form>
+</div>
+
+
+<div class="detalhes">
+    <h2>Detalhes de entradas e saídas:</h2>
+    <form action="/clientes/entradaesaida" method="GET" class="form-container">
+        <div class="form-group-container">
+        <div class="form-group">
+            <label for="dataInicio">Data Início:</label>
+            <input type="date" id="dataInicio" name="dataInicio" value="{{dataInicio}}" required>
+        </div>
+        <div class="form-group">
+            <label for="dataFim">Data Fim:</label>
+            <input type="date" id="dataFim" name="dataFim" value="{{dataFim}}" required>
+        </div>
+        </div>
+        <div class="form-group">
+            <input type="submit" value="Pesquisar" class="botao">
+        </div>
+    </form>
+</div>
+
+<div class="resultados">
+    <!-- Exibir Entradas (Vendas) -->
+    <h3>Entradas (Vendas)</h3>
+    {{#if entradas.length}}
+        <table>
+            <thead>
+                <tr>
+                    <th>Tipo de Entrada</th>
+                    <th>Valor</th>
+                    <th>Data</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each entradas}}
+                    <tr>
+                        <td>Venda</td>
+                        <td>{{formatarNumero this.precovenda}}</td>
+                        <td>{{formatarData this.datavenda}}</td>
+                    </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    {{else}}
+        <p>Não foram encontradas entradas no período solicitado.</p>
+    {{/if}}
+    <br>
+
+    <!-- Exibir Saídas -->
+    <h3>Saídas</h3>
+    {{#if saidas.length}}
+        <table>
+            <thead>
+                <tr>
+                    <th>Nome da Saída</th>
+                    <th>Valor</th>
+                    <th>Data</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each saidas}}
+                    <tr>
+                        <td>{{this.nomesaida}}</td>
+                        <td>{{formatarNumero this.valor}}</td>
+                        <td>{{formatarData this.data}}</td>
+                    </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    {{else}}
+        <p>Não foram encontradas saídas no período solicitado.</p>
+    {{/if}}
+
+
+    <!-- Exibir Totais e Lucro -->
+    <br>
+    <div class="resultado-finais">
+        <button class="botao-vendas" style="background-color: #007bff; color: white;">
+            Total de Entradas: R$ {{totalVendas}}
+        </button>
+        <button class="botao-total" style="background-color: #d9534f; color: white;">
+            Total de Saídas: R$ {{totalSaidas}}
+        </button>
+        <button class="botao-total" style="background-color:  #f39c12; color: white;">
+            Lucro: R$ {{lucro}} 
+        </button>
+
+    </div>
+
+</div>
+
+
+
+<script>
+    function validarFormulario() {
+        const valorInput = document.getElementById('valor');
+        const valor = valorInput.value;
+
+        // Expressão regular para validar o formato do valor
+        const formatoValido = /^\d{1,3}(?:\.\d{3})*(?:,\d{2})?$/;
+
+        if (!formatoValido.test(valor)) {
+            alert('Por favor, insira o valor no formato correto (ex: 1.000,00).');
+            return false; 
+        }
+        return true;
+    }
+</script>
+
+
+<style>
+    .entradaesaida, .saidas, .detalhes, .resultados{
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        max-width: 800px;
+        width: 100%;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .entradaesaida h2, .saidas h2, .detalhes h2 , .resultados h2{
+        margin-bottom: 20px;
+        color: #333;
+        text-align: center;
+    }
+    
+    .botao {
+        background-color: #007bff;
+        color: white;
+        padding: 6px 12px;
+        text-align: center;
+        text-decoration: none;
+        border-radius: 1000px;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background-color 0.3s ease;
+    }
+    
+    .botao:hover {
+        background-color: #0056b3;
+    }
+
+    .form-group-container {
+        display: flex;
+        justify-content: space-between;
+        gap: 20px; 
+    }
+
+    .form-group {
+        flex: 1; 
+        min-width: 150px;
+    }
+
+
+    .form-group label {
+        margin-bottom: 5px;
+        color: black;
+    }
+
+    .form-group input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        box-sizing: border-box;
+    }
+
+    thead th {
+    padding: 0 25px; 
+    margin-right: 20px; 
+    }
+
+    thead th:last-child {
+        margin-right: 0; 
+    }
+
+    .resultado-totais {
+        display: flex;
+        justify-content: space-between;
+        gap: 20px; 
+        margin-top: 20px; 
+    }
+
+    .resultado-finais {
+        display: flex;
+        justify-content: space-around; 
+        gap: 15px; 
+        margin-top: 20px; 
+    }
+
+    .botao-vendas, .botao-total {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        font-size: 15px;
+        cursor: pointer;
+        text-align: center;
+        flex: 1; 
+        min-width: 180px; 
+        margin: 0 5px;
+    }
+
+    .botao-vendas {
+        background-color: #007bff;
+        color: white;
+    }
+
+    .botao-total {
+        background-color: #d9534f;
+        color: white;
+    }
+
+    .botao-total:nth-of-type(3) {
+        background-color: green; 
+    }
+
+
+    .form-text {
+        color: #6c757d;
+        font-size: 0.875rem;
+    }
+
+    .text-muted {
+        font-style: italic;
+    }
+</style>
